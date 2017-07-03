@@ -1,0 +1,58 @@
+config:
+  instrumentation: [energy_probe_ext, delay, file_poller, ~fps, ~trace-cmd]
+  energy_probe_ext:
+    config: '/home/leoy/Work/tools/wa_hikey960/hikey960_aep_config'
+  delay:
+    temperature_between_iterations: 48000
+    # temperature_before_start: 48000
+    active_cooling: True
+  file_poller:
+    files: ['/sys/class/thermal/thermal_zone0/temp']
+    as_root: True
+  result_processors:
+    - json
+    - summary_csv
+
+global:
+  iterations: 2
+  runtime_params:
+    sysfile_values:
+      /sys/class/devfreq/e82c0000.mali/governor: userspace
+      /sys/class/devfreq/e82c0000.mali/userspace/set_freq: 533000000
+      /sys/class/thermal/thermal_zone0/sustainable_power: 99999999
+      /proc/sys/kernel/sched_use_walt_cpu_util: 0
+      /proc/sys/kernel/sched_use_walt_task_util: 0
+
+sections:
+  - id: my_kernel_version_1
+    flash:
+      images:
+        boot: /home/leoy/work3/hikey960/aosp/kernel/hikey-linaro/out_v8/arch/arm64/boot/boot.img
+
+  - id: my_kernel_version_2
+    flash:
+      images:
+        boot: /home/leoy/work3/hikey960/aosp/kernel/hikey-linaro/out_v8/arch/arm64/boot/boot.img
+
+  - id: my_kernel_version_3
+    flash:
+      images:
+        boot: /home/leoy/work3/hikey960/aosp/kernel/hikey-linaro/out_v8/arch/arm64/boot/boot.img
+
+workloads:
+  - name: idle
+    params:
+      duration: 5
+  - name: audio
+    params:
+      duration: 10
+        #- name: video
+        #  params:
+        #    play_duration: 10
+        #    resolution: 1080p
+        #- name: geekbench
+        #  params:
+        #    version: 4.0.1
+        #- name: vellamo
+        #- name: octaned8
+  - name: hackbench
