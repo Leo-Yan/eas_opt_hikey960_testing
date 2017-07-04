@@ -13,7 +13,7 @@ from collections import defaultdict
 
 class result_comparison:
 
-    scenarios = {
+    power_scenarios = {
         'idle' : [
             'Power',
         ],
@@ -27,9 +27,17 @@ class result_comparison:
             'Power',
         ],
         'geekbench' : [
+            'Power',
+        ],
+    }
+
+    perf_scenarios = {
+        'hackbench' : [
+            'test_time'
+        ],
+        'geekbench' : [
             'score',
             'multicore_score',
-            'Power',
         ],
     }
 
@@ -43,6 +51,10 @@ class result_comparison:
     def parse_file(self):
 
         self.sections = self.parse_sections()
+        self.parse_power()
+        self.parse_perf()
+
+    def parse_power(self):
 
         self.fo = open(self.outfile, "w+")
         self.fo.write('test')
@@ -51,13 +63,57 @@ class result_comparison:
             self.fo.write(' ' + kern)
         self.fo.write('\n')
 
-        for s in self.scenarios:
-            value = self.parse_scene(s)
+        for s in self.power_scenarios:
+            value = self.parse_scene(s, self.power_scenarios)
             if bool(value) == False:
                 continue
             self.write_scene(s, value)
 
         self.fo.close()
+        self.plot_comparison('Power')
+
+    def parse_perf(self):
+
+        self.fo = open(self.outfile, "w+")
+        self.fo.write('test')
+
+        for kern in self.sections:
+            self.fo.write(' ' + kern)
+        self.fo.write('\n')
+
+        for s in self.perf_scenarios:
+            value = self.parse_scene(s, self.perf_scenarios)
+            if bool(value) == False:
+                continue
+            self.write_scene(s, value)
+
+        self.fo.close()
+        self.plot_comparison('Performance')
+
+    def plot_comparison(self, comp_type):
+
+        sec_num = len(self.sections)
+        sec_num += 1
+
+        temp_f = open('/tmp/plot_template', "w+")
+        temp_f.write("set terminal pngcairo noenhanced size 1024,600 font 'Ubuntu,9'\n")
+        temp_f.write("set output '"+ comp_type + "_comparison.png'\n")
+        temp_f.write("set grid\n")
+        temp_f.write("set title " + "'" + comp_type + " Comparision'\n")
+        temp_f.write("set ylabel " + "'" + comp_type + " Result'\n")
+        temp_f.write("set boxwidth 0.9 absolute\n")
+        temp_f.write("set style fill solid 1.00 border lt -1\n")
+        temp_f.write("set key outside right\n")
+        temp_f.write("set style histogram clustered gap 1 title  offset character 0, 0, 0\n")
+        temp_f.write("set datafile missing '-'\n")
+        temp_f.write("set style data histograms\n")
+        temp_f.write("set xtics rotate by -45\n")
+        temp_f.write("set xtics ()\n")
+        temp_f.write("plot for [i=2:"+str(sec_num)+"] filename using i:xtic(1) ti col ls i-1;\n")
+        temp_f.write("set terminal wxt noenhanced font 'Ubuntu,9'\n")
+        temp_f.close()
+
+        os.system('gnuplot -e "filename=\''+self.outfile+'\''+'" /tmp/plot_template')
 
     def parse_sections(self):
 
@@ -82,7 +138,7 @@ class result_comparison:
 
         return sec
 
-    def parse_scene(self, scene):
+    def parse_scene(self, scene, scenarios):
 
         l1_Value = dict()
 
@@ -112,7 +168,7 @@ class result_comparison:
                 condition = row[3]
                 value     = row[4]
 
-                if condition not in self.scenarios[scene]:
+                if condition not in scenarios[scene]:
                     continue
 
                 #print section
