@@ -14,36 +14,34 @@ from collections import defaultdict
 class result_comparison:
 
     power_scenarios = {
-        'idle' : [
-            'Power',
-        ],
-        'audio' : [
-            'Power',
-        ],
-        'video' : [
-            'Power',
-        ],
-        'hackbench' : [
-            'Power',
-        ],
-        'geekbench' : [
-            'Power',
-        ],
+        'idle'         : [ 'Power' ],
+        'audio'        : [ 'Power' ],
+        'video'        : [ 'Power' ],
+        'hackbench'    : [ 'Power' ],
+        'geekbench'    : [ 'Power' ],
+        'linpack'      : [ 'Power' ],
+        'quadrant'     : [ 'Power' ],
+        'smartbench'   : [ 'Power' ],
+        'nenamark'     : [ 'Power' ],
+        'recentfling'  : [ 'Power' ],
+        'galleryfling' : [ 'Power' ],
+        'browserfling' : [ 'Power' ],
     }
 
     perf_scenarios = {
-        'hackbench' : [
-            'test_time'
-        ],
-        'geekbench' : [
-            'score',
-            'multicore_score',
-        ],
+        'hackbench'  : [ 'test_time' ],
+        'geekbench'  : [ 'score', 'multicore_score' ],
+        'linpack'    : [ 'Linpack ST', 'Linpack MT' ],
+        'quadrant'   : [ 'benchmark_score' ],
+        'smartbench' : [ 'Smartbench: valueProd', 'Smartbench: valueGame' ],
+        'nenamark'   : [ 'nenamark score' ],
     }
 
     # Parse the testing sections, every section is corresponding to one
     # kernel image or one set configurations
     sections = []
+
+    baseline = None
 
     def __init__(self, infile):
         self.infile  = infile
@@ -67,6 +65,8 @@ class result_comparison:
                 sec.append(section)
 
         sec.sort()
+
+        self.baseline = sec[0]
         return sec
 
     def plot_comparison(self, comp_type):
@@ -94,19 +94,20 @@ class result_comparison:
 
         os.system('gnuplot -e "filename=\'' + comp_type + '_plot.txt' + '\''+'" /tmp/plot_template')
 
-    def write_scenario(self, scene, value):
+    def write_scenario(self, scene, value, baseline=None):
 
         self.fo.write(scene)
 
+        if not baseline is None:
+            for condition, values in sorted(value[baseline].items()):
+                base = sum(values) / len(values)
+        else:
+            base = 0
+
         for kern in self.sections:
             collectValue = sorted(value[kern].items())
-
-            print collectValue
-
             for condition, values in collectValue:
-                print condition
-                print values
-                self.fo.write(' ' + str(sum(values) / len(values)))
+                self.fo.write(' ' + str(sum(values) / len(values) - base))
 
         self.fo.write('\n')
 
@@ -146,7 +147,7 @@ class result_comparison:
 
         return l1_Value
 
-    def parse_scenarios(self, scenarios, comp_str):
+    def parse_scenarios(self, scenarios, comp_str, baseline=None):
 
         self.fo = open(comp_str + '_plot.txt', "w+")
         self.fo.write('test')
@@ -159,16 +160,18 @@ class result_comparison:
             value = self.parse_scenario(s, scenarios)
             if bool(value) == False:
                 continue
-            self.write_scenario(s, value)
+            self.write_scenario(s, value, baseline)
 
         self.fo.close()
         self.plot_comparison(comp_str)
 
     def parse_power(self):
         self.parse_scenarios(self.power_scenarios, 'power')
+        self.parse_scenarios(self.power_scenarios, 'power_delta', self.baseline)
 
     def parse_perf(self):
         self.parse_scenarios(self.perf_scenarios, 'performance')
+        self.parse_scenarios(self.perf_scenarios, 'performance_delta', self.baseline)
 
     def parse_file(self):
         self.sections = self.parse_sections()
