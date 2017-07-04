@@ -34,16 +34,30 @@ class result_comparison:
     }
 
     sections = []
+    write_tag = 0
 
     def __init__(self, infile, outfile):
-        self.infile = infile
-
-    def __del__(self):
-        self.fr.close()
+        self.infile  = infile
+        self.outfile = outfile
 
     def parse_file(self):
+
+        self.sections = self.parse_sections()
+
+        self.fo = open(self.outfile, "w+")
+        self.fo.write('test')
+
+        for kern in self.sections:
+            self.fo.write(' ' + kern)
+        self.fo.write('\n')
+
         for s in self.scenarios:
-            self.parse_scene(s)
+            value = self.parse_scene(s)
+            if bool(value) == False:
+                continue
+            self.write_scene(s, value)
+
+        self.fo.close()
 
     def parse_sections(self):
 
@@ -62,13 +76,15 @@ class result_comparison:
             if not section in sec:
                 sec.append(section)
 
+        sec.sort()
+
+        print sec
+
         return sec
 
     def parse_scene(self, scene):
 
         l1_Value = dict()
-
-        self.sections = self.parse_sections()
 
         p = re.compile(r'(.*)_\d', re.I)
 
@@ -108,6 +124,25 @@ class result_comparison:
                 l1_Value[section] = l2_Value
 
         print l1_Value
+
+        return l1_Value
+
+
+    def write_scene(self, scene, value):
+
+        self.fo.write(scene)
+
+        for kern in self.sections:
+            collectValue = sorted(value[kern].items())
+
+            print collectValue
+
+            for condition, values in collectValue:
+                print condition
+                print values
+                self.fo.write(' ' + str(sum(values) / len(values)))
+
+        self.fo.write('\n')
 
 
 def main(argv):
