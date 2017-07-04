@@ -41,54 +41,33 @@ class result_comparison:
         ],
     }
 
+    # Parse the testing sections, every section is corresponding to one
+    # kernel image or one set configurations
     sections = []
-    write_tag = 0
 
-    def __init__(self, infile, outfile):
+    def __init__(self, infile):
         self.infile  = infile
-        self.outfile = outfile
 
-    def parse_file(self):
+    def parse_sections(self):
 
-        self.sections = self.parse_sections()
-        self.parse_power()
-        self.parse_perf()
+        sec = []
 
-    def parse_power(self):
+        self.fr = open(self.infile, "r")
+        in_line = csv.reader(self.fr)
+        next(in_line, None)
 
-        self.fo = open(self.outfile, "w+")
-        self.fo.write('test')
+        # Abstract the section id
+        p = re.compile(r'(.*)_\d', re.I)
 
-        for kern in self.sections:
-            self.fo.write(' ' + kern)
-        self.fo.write('\n')
+        for row in in_line:
+            m = re.match(p, row[0])
+            section = m.group(1)
 
-        for s in self.power_scenarios:
-            value = self.parse_scene(s, self.power_scenarios)
-            if bool(value) == False:
-                continue
-            self.write_scene(s, value)
+            if not section in sec:
+                sec.append(section)
 
-        self.fo.close()
-        self.plot_comparison('Power')
-
-    def parse_perf(self):
-
-        self.fo = open(self.outfile, "w+")
-        self.fo.write('test')
-
-        for kern in self.sections:
-            self.fo.write(' ' + kern)
-        self.fo.write('\n')
-
-        for s in self.perf_scenarios:
-            value = self.parse_scene(s, self.perf_scenarios)
-            if bool(value) == False:
-                continue
-            self.write_scene(s, value)
-
-        self.fo.close()
-        self.plot_comparison('Performance')
+        sec.sort()
+        return sec
 
     def plot_comparison(self, comp_type):
 
@@ -113,78 +92,9 @@ class result_comparison:
         temp_f.write("set terminal wxt noenhanced font 'Ubuntu,9'\n")
         temp_f.close()
 
-        os.system('gnuplot -e "filename=\''+self.outfile+'\''+'" /tmp/plot_template')
+        os.system('gnuplot -e "filename=\'' + comp_type + '_plot.txt' + '\''+'" /tmp/plot_template')
 
-    def parse_sections(self):
-
-        sec = []
-
-        self.fr = open(self.infile, "r")
-        in_line = csv.reader(self.fr)
-        next(in_line, None)
-
-        p = re.compile(r'(.*)_\d', re.I)
-
-        for row in in_line:
-            m = re.match(p, row[0])
-            section = m.group(1)
-
-            if not section in sec:
-                sec.append(section)
-
-        sec.sort()
-
-        print sec
-
-        return sec
-
-    def parse_scene(self, scene, scenarios):
-
-        l1_Value = dict()
-
-        p = re.compile(r'(.*)_\d', re.I)
-
-        for kern in self.sections:
-
-            l2_Value = defaultdict(list)
-
-            self.fr = open(self.infile, "r")
-            in_line = csv.reader(self.fr)
-            next(in_line, None)
-
-            for row in in_line:
-                #print row[0]
-                #print row[1]
-                #print row[3]
-                #print row[4]
-
-                m = re.match(p, row[0])
-                #print m.group(1)
-
-                if row[1] not in scene:
-                    continue
-
-                section    = m.group(1)
-                condition = row[3]
-                value     = row[4]
-
-                if condition not in scenarios[scene]:
-                    continue
-
-                #print section
-                #print kern
-                if section != kern:
-                    continue
-
-                l2_Value[condition].append(float(value))
-                l1_Value[section] = l2_Value
-
-        print l1_Value
-
-        return l1_Value
-
-
-    def write_scene(self, scene, value):
+    def write_scenario(self, scene, value):
 
         self.fo.write(scene)
 
@@ -200,17 +110,77 @@ class result_comparison:
 
         self.fo.write('\n')
 
+    def parse_scenario(self, scene, scenarios):
 
-def main(argv):
+        l1_Value = dict()
+
+        p = re.compile(r'(.*)_\d', re.I)
+
+        for kern in self.sections:
+
+            l2_Value = defaultdict(list)
+
+            self.fr = open(self.infile, "r")
+            in_line = csv.reader(self.fr)
+            next(in_line, None)
+
+            for row in in_line:
+
+                m = re.match(p, row[0])
+
+                if row[1] not in scene:
+                    continue
+
+                section   = m.group(1)
+                condition = row[3]
+                value     = row[4]
+
+                if condition not in scenarios[scene]:
+                    continue
+
+                if section != kern:
+                    continue
+
+                l2_Value[condition].append(float(value))
+                l1_Value[section] = l2_Value
+
+        return l1_Value
+
+    def parse_scenarios(self, scenarios, comp_str):
+
+        self.fo = open(comp_str + '_plot.txt', "w+")
+        self.fo.write('test')
+
+        for kern in self.sections:
+            self.fo.write(' ' + kern)
+        self.fo.write('\n')
+
+        for s in scenarios:
+            value = self.parse_scenario(s, scenarios)
+            if bool(value) == False:
+                continue
+            self.write_scenario(s, value)
+
+        self.fo.close()
+        self.plot_comparison(comp_str)
+
+    def parse_power(self):
+        self.parse_scenarios(self.power_scenarios, 'power')
+
+    def parse_perf(self):
+        self.parse_scenarios(self.perf_scenarios, 'performance')
+
+    def parse_file(self):
+        self.sections = self.parse_sections()
+        self.parse_power()
+        self.parse_perf()
+
+
+if __name__ == "__main__":
 
     if not os.path.isfile(sys.argv[1]):
         print "file don't exists:"
         sys.exit(1)
 
-    #for s in scenarios:
-    #    parse_file(s, sys.argv[1])
-    parser = result_comparison(sys.argv[1], sys.argv[2])
+    parser = result_comparison(sys.argv[1])
     parser.parse_file()
-
-if __name__ == "__main__":
-    main(sys.argv[1:])
