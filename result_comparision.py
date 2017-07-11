@@ -14,27 +14,86 @@ from collections import defaultdict
 class result_comparison:
 
     power_scenarios = {
-        'idle'         : [ 'Power' ],
-        'audio'        : [ 'Power' ],
-        'video'        : [ 'Power' ],
-        'hackbench'    : [ 'Power' ],
-        'geekbench'    : [ 'Power' ],
-        'linpack'      : [ 'Power' ],
-        'quadrant'     : [ 'Power' ],
-        'smartbench'   : [ 'Power' ],
-        'nenamark'     : [ 'Power' ],
-        'recentfling'  : [ 'Power' ],
-        'galleryfling' : [ 'Power' ],
-        'browserfling' : [ 'Power' ],
+        'idle'                                      : [ 'Power' ],
+        'audio'                                     : [ 'Power' ],
+        'video'                                     : [ 'Power' ],
+        'hackbench'                                 : [ 'Power' ],
+        'geekbench'                                 : [ 'Power' ],
+        'linpack'                                   : [ 'Power' ],
+        'quadrant'                                  : [ 'Power' ],
+        'smartbench'                                : [ 'Power' ],
+        'nenamark'                                  : [ 'Power' ],
+        'recentfling'                               : [ 'Power' ],
+        'galleryfling'                              : [ 'Power' ],
+        'browserfling'                              : [ 'Power' ],
+        'uibench'                                   : [ 'Power' ],
+        'uibench_InflatingListActivity'             : [ 'Power' ],
+        'uibench_TextCacheHighHitrateActivity'      : [ 'Power' ],
+        'uibench_FullscreenOverdrawActivity'        : [ 'Power' ],
+        'uibench_EditTextTypeActivity'              : [ 'Power' ],
+        'uibench_TrivialRecyclerViewActivity'       : [ 'Power' ],
+        'uibench_InvalidateActivity'                : [ 'Power' ],
+        'uibench_DialogListActivity'                : [ 'Power' ],
+        'uibench_ActivityTransition'                : [ 'Power' ],
+        'uibench_TextCacheLowHitrateActivity'       : [ 'Power' ],
+        'uibench_ScrollableWebViewActivity'         : [ 'Power' ],
+        'uibench_BitmapUploadActivity'              : [ 'Power' ],
+        'uibench_TrivialListActivity'               : [ 'Power' ],
+        'uibench_SlowBindRecyclerViewActivity'      : [ 'Power' ],
+        'uibench_TrivialAnimationActivity'          : [ 'Power' ],
+        'uibench_GlTextureViewActivity'             : [ 'Power' ],
+        'uibench_ActivityTransitionDetails'         : [ 'Power' ],
+        'uibench_ShadowGridActivity'                : [ 'Power' ]
     }
 
     perf_scenarios = {
-        'hackbench'  : [ 'test_time' ],
-        'geekbench'  : [ 'score', 'multicore_score' ],
-        'linpack'    : [ 'Linpack ST', 'Linpack MT' ],
-        'quadrant'   : [ 'benchmark_score' ],
-        'smartbench' : [ 'Smartbench: valueProd', 'Smartbench: valueGame' ],
-        'nenamark'   : [ 'nenamark score' ],
+        'hackbench'    : [ 'test_time' ],
+        'geekbench'    : [ 'score',
+                           'multicore_score' ],
+        'linpack'      : [ 'Linpack ST',
+                           'Linpack MT' ],
+        'quadrant'     : [ 'benchmark_score' ],
+        'smartbench'   : [ 'Smartbench: valueProd',
+                           'Smartbench: valueGame' ],
+        'nenamark'     : [ 'nenamark score' ],
+        'recentfling'  : [ 'Average 90th Percentile',
+                           'Average 95th Percentile',
+                           'Average 99th Percentile',
+                           'Average Jank',
+                           'Average Jank%' ],
+        'galleryfling' : [ 'Average 90th Percentile',
+                           'Average 95th Percentile',
+                           'Average 99th Percentile',
+                           'Average Jank',
+                           'Average Jank%' ],
+        'browserfling' : [ 'Average 90th Percentile',
+                           'Average 95th Percentile',
+                           'Average 99th Percentile',
+                           'Average Jank',
+                           'Average Jank%' ],
+        'emailfling'   : [ 'Average 90th Percentile',
+                           'Average 95th Percentile',
+                           'Average 99th Percentile',
+                           'Average Jank',
+                           'Average Jank%' ],
+        'uibench'                              : [ 'janks%' ],
+        'uibench_InflatingListActivity'        : [ 'janks%' ],
+        'uibench_TextCacheHighHitrateActivity' : [ 'janks%' ],
+        'uibench_FullscreenOverdrawActivity'   : [ 'janks%' ],
+        'uibench_EditTextTypeActivity'         : [ 'janks%' ],
+        'uibench_TrivialRecyclerViewActivity'  : [ 'janks%' ],
+        'uibench_InvalidateActivity'           : [ 'janks%' ],
+        'uibench_DialogListActivity'           : [ 'janks%' ],
+        'uibench_ActivityTransition'           : [ 'janks%' ],
+        'uibench_TextCacheLowHitrateActivity'  : [ 'janks%' ],
+        'uibench_ScrollableWebViewActivity'    : [ 'janks%' ],
+        'uibench_BitmapUploadActivity'         : [ 'janks%' ],
+        'uibench_TrivialListActivity'          : [ 'janks%' ],
+        'uibench_SlowBindRecyclerViewActivity' : [ 'janks%' ],
+        'uibench_TrivialAnimationActivity'     : [ 'janks%' ],
+        'uibench_GlTextureViewActivity'        : [ 'janks%' ],
+        'uibench_ActivityTransitionDetails'    : [ 'janks%' ],
+        'uibench_ShadowGridActivity'           : [ 'janks%' ],
     }
 
     # Parse the testing sections, every section is corresponding to one
@@ -59,7 +118,11 @@ class result_comparison:
 
         for row in in_line:
             m = re.match(p, row[0])
-            section = m.group(1)
+
+            if m is None:
+                section = 'general_section'
+            else:
+                section = m.group(1)
 
             if not section in sec:
                 sec.append(section)
@@ -88,26 +151,38 @@ class result_comparison:
         temp_f.write("set style data histograms\n")
         temp_f.write("set xtics rotate by -45\n")
         temp_f.write("set xtics ()\n")
+        temp_f.write("set style line 1 lc rgb 'orange'\n")
+        temp_f.write("set style line 2 lc rgb 'pink'\n")
+        temp_f.write("set style line 3 lc rgb 'blue'\n")
+        temp_f.write("set style line 4 lc rgb 'cyan'\n")
+        temp_f.write("set style line 5 lc rgb 'seagreen'\n")
+        temp_f.write("set style line 6 lc rgb 'green'\n")
+        temp_f.write("set style line 7 lc rgb 'brown'\n")
+        temp_f.write("set style line 8 lc rgb 'yellow'\n")
+        temp_f.write("set style line 9 lc rgb 'red'\n")
         temp_f.write("plot for [i=2:"+str(sec_num)+"] filename using i:xtic(1) ti col ls i-1;\n")
         temp_f.write("set terminal wxt noenhanced font 'Ubuntu,9'\n")
         temp_f.close()
 
         os.system('gnuplot -e "filename=\'' + comp_type + '_plot.txt' + '\''+'" /tmp/plot_template')
 
-    def write_scenario(self, scene, value, baseline=None):
+    def write_scenario(self, scene, metric, value, baseline=None):
 
-        self.fo.write(scene)
+        self.fo.write(scene.replace(" ", "_") + '_' + metric.replace(" ", "_"))
 
         if not baseline is None:
-            for condition, values in sorted(value[baseline].items()):
-                base = sum(values) / len(values)
+            for m, values in sorted(value[baseline].items()):
+                if m == metric:
+                    base = sum(values) / len(values)
+                    break
         else:
             base = 0
 
         for kern in self.sections:
             collectValue = sorted(value[kern].items())
-            for condition, values in collectValue:
-                self.fo.write(' ' + str(sum(values) / len(values) - base))
+            for m, values in collectValue:
+                if m == metric:
+                    self.fo.write(' ' + str(sum(values) / len(values) - base))
 
         self.fo.write('\n')
 
@@ -132,7 +207,11 @@ class result_comparison:
                 if row[1] not in scene:
                     continue
 
-                section   = m.group(1)
+                if m is not None:
+                    section = m.group(1)
+                else:
+                    section = 'general_section'
+
                 condition = row[3]
                 value     = row[4]
 
@@ -156,13 +235,23 @@ class result_comparison:
             self.fo.write(' ' + kern)
         self.fo.write('\n')
 
+        filled_data = False
+
         for s in scenarios:
             value = self.parse_scenario(s, scenarios)
             if bool(value) == False:
                 continue
-            self.write_scenario(s, value, baseline)
+            filled_data = True
 
+            for metric in scenarios[s]:
+                print 'condition = {}'.format(metric)
+                self.write_scenario(s, metric, value, baseline)
         self.fo.close()
+
+        if filled_data is False:
+            print comp_str + ": data is empty"
+            return
+
         self.plot_comparison(comp_str)
 
     def parse_power(self):
