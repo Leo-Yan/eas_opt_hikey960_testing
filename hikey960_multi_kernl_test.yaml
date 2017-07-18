@@ -1,20 +1,24 @@
 config:
-  instrumentation: [energy_probe_ext, delay, file_poller, ~fps, ~trace-cmd]
+  instrumentation: [energy_probe_ext, delay, file_poller, fps, ~trace-cmd, eas_stats]
   energy_probe_ext:
     config: '/home/leoy/Work/tools/wa_hikey960/hikey960_aep_config'
   delay:
-    temperature_between_iterations: 48000
+    temperature_between_iterations: 43500
     # temperature_before_start: 48000
     active_cooling: True
   file_poller:
     files: ['/sys/class/thermal/thermal_zone0/temp']
     as_root: True
+  fps:
+    keep_raw: true
+    crash_check: false
   result_processors:
     - json
     - summary_csv
+    - comparison
 
 global:
-  iterations: 2
+  iterations: 3
   runtime_params:
     sysfile_values:
       /sys/class/devfreq/e82c0000.mali/governor: userspace
@@ -22,37 +26,72 @@ global:
       /sys/class/thermal/thermal_zone0/sustainable_power: 99999999
       /proc/sys/kernel/sched_use_walt_cpu_util: 0
       /proc/sys/kernel/sched_use_walt_task_util: 0
+      /sys/class/devfreq/ddr_devfreq/governor: userspace
+      /sys/class/devfreq/ddr_devfreq/min_freq: 685000000
+      /sys/class/devfreq/ddr_devfreq/max_freq: 685000000
+      /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor: sched
+      /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor: sched
+      /sys/devices/system/cpu/cpufreq/sched/up_throttle_nsec: 500000
+      /sys/devices/system/cpu/cpufreq/sched/down_throttle_nsec: 50000000
+      #/sys/devices/system/cpu/cpufreq/schedutil/up_rate_limit_us: 500
+      #/sys/devices/system/cpu/cpufreq/schedutil/down_rate_limit_us: 50000
+
 
 sections:
-  - id: my_kernel_version_1
+  - id: kernel_fbt
     flash:
       images:
-        boot: /home/leoy/work3/hikey960/aosp/kernel/hikey-linaro/out_v8/arch/arm64/boot/boot.img
+        boot: /home/leoy/Work/tools/wa_hikey960/power_opt_kern_imgs/boot_baseline.img
 
-  - id: my_kernel_version_2
+  - id: kernel_fbt_eas
     flash:
       images:
-        boot: /home/leoy/work3/hikey960/aosp/kernel/hikey-linaro/out_v8/arch/arm64/boot/boot.img
+        boot: /home/leoy/Work/tools/wa_hikey960/power_opt_kern_imgs/boot_fbt_vs_eap.img
 
-  - id: my_kernel_version_3
-    flash:
-      images:
-        boot: /home/leoy/work3/hikey960/aosp/kernel/hikey-linaro/out_v8/arch/arm64/boot/boot.img
+  # - id: my_kernel_version_3
+  #   flash:
+  #     images:
+  #       boot: /home/leoy/work3/hikey960/aosp/kernel/hikey-linaro/out_v8/arch/arm64/boot/boot.img
 
 workloads:
   - name: idle
     params:
-      duration: 5
+      duration: 120
   - name: audio
     params:
-      duration: 10
-        #- name: video
-        #  params:
-        #    play_duration: 10
-        #    resolution: 1080p
-        #- name: geekbench
-        #  params:
-        #    version: 4.0.1
-        #- name: vellamo
-        #- name: octaned8
-  - name: hackbench
+      duration: 120
+  - name: video
+    params:
+      play_duration: 120
+      resolution: 1080p
+  - name: rt_app
+    params:
+      config: /home/leoy/Work/tools/workload-automation/wlauto/workloads/rt_app/use_cases/camera-long.json
+      duration: 120
+  #- name: geekbench
+  #  params:
+  #    version: 4.0.1
+  #    timeout: 3600
+  #- name: vellamo
+  #- name: octaned8
+  #- name: hackbench
+  - name: galleryfling
+  - name: browserfling
+  - name: recentfling
+  - name: emailfling
+  - name: uibench
+    label: uibench_InflatingListActivity
+    workload_params:
+      uibench_activity: InflatingListActivity
+  - name: uibench
+    label: uibench_InvalidateActivity
+    workload_params:
+      uibench_activity: InvalidateActivity
+  - name: uibench
+    label: uibench_ActivityTransition
+    workload_params:
+      uibench_activity: ActivityTransition
+  - name: uibench
+    label: uibench_TrivialAnimationActivity
+    workload_params:
+      uibench_activity: TrivialAnimationActivity
