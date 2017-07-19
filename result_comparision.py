@@ -618,6 +618,26 @@ class result_comparison:
 
         self.fo.write('\n')
 
+
+    def write_active_power_scenario(self, scene, metric, value):
+
+        self.fo.write(scene.replace(" ", "_") + '_' + metric.replace(" ", "_"))
+
+        idle_power_value = self.parse_scenario('idle', self.power_scenarios)
+
+        print idle_power_value
+
+        for kern in self.sections:
+            collectValue = sorted(value[kern].items())
+            for m, values in collectValue:
+                if m == metric:
+                    base_value = idle_power_value[kern]['Power']
+                    base = sum(base_value) / len(base_value)
+                    self.fo.write(' ' + str(sum(values) / len(values) - base))
+
+        self.fo.write('\n')
+
+
     def parse_scenario(self, scene, scenarios):
 
         l1_Value = dict()
@@ -678,6 +698,35 @@ class result_comparison:
             for metric in scenarios[s]:
                 print 'condition = {}'.format(metric)
                 self.write_scenario(s, metric, value, baseline)
+        self.fo.close()
+
+        if filled_data is False:
+            print comp_str + ": data is empty"
+            return
+
+        self.plot_comparison(comp_str)
+
+
+    def parse_scenarios_active_power(self, scenarios, comp_str):
+
+        self.fo = open(comp_str + '_plot.txt', "w+")
+        self.fo.write('test')
+
+        for kern in self.sections:
+            self.fo.write(' ' + kern)
+        self.fo.write('\n')
+
+        filled_data = False
+
+        for s in scenarios:
+            value = self.parse_scenario(s, scenarios)
+            if bool(value) == False:
+                continue
+            filled_data = True
+
+            for metric in scenarios[s]:
+                print 'condition = {}'.format(metric)
+                self.write_active_power_scenario(s, metric, value)
         self.fo.close()
 
         if filled_data is False:
@@ -863,6 +912,9 @@ class result_comparison:
         self.parse_scenarios(self.power_interactive_scenarios, 'power_interactive')
         self.parse_scenarios(self.power_interactive_scenarios, 'power_delta_interactive', self.baseline)
 
+    def parse_active_power(self):
+        self.parse_scenarios_active_power(self.power_scenarios, 'power_active')
+
     def parse_perf(self):
         self.parse_scenarios(self.perf_scenarios, 'performance')
         self.parse_scenarios(self.perf_scenarios, 'performance_delta', self.baseline)
@@ -878,6 +930,7 @@ class result_comparison:
         self.parse_power()
         self.parse_perf()
         self.parse_schedstats()
+        self.parse_active_power()
 
 
 if __name__ == "__main__":
