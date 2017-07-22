@@ -30,6 +30,7 @@ class result_comparison:
         'recentfling'                               : [ 'Power' ],
         'galleryfling'                              : [ 'Power' ],
         'browserfling'                              : [ 'Power' ],
+        'emailfling'                              : [ 'Power' ],
         'uibench'                                   : [ 'Power' ],
         'uibench_InflatingListActivity'             : [ 'Power' ],
         'uibench_TextCacheHighHitrateActivity'      : [ 'Power' ],
@@ -212,6 +213,16 @@ class result_comparison:
            'sched_fbt_count', 'sched_cas_attempts',
            'sched_tob', 'sched_tol' ],
          'browserfling' :
+         [ 'sched_sis_attempts', 'sched_sis_idle', 'sched_sis_cache_affine',
+           'sched_sis_suff_cap', 'sched_sis_idle_cpu', 'sched_sis_count',
+           'sched_secb_attempts', 'sched_secb_sync', 'sched_secb_idle_bt',
+           'sched_secb_insuff_cap', 'sched_secb_no_nrg_sav',
+           'sched_secb_nrg_sav', 'sched_secb_count',
+           'sched_fbt_attempts', 'sched_fbt_no_cpu',
+           'sched_fbt_no_sd', 'sched_fbt_pref_idle',
+           'sched_fbt_count', 'sched_cas_attempts',
+           'sched_tob', 'sched_tol' ],
+         'emailfling' :
          [ 'sched_sis_attempts', 'sched_sis_idle', 'sched_sis_cache_affine',
            'sched_sis_suff_cap', 'sched_sis_idle_cpu', 'sched_sis_count',
            'sched_secb_attempts', 'sched_secb_sync', 'sched_secb_idle_bt',
@@ -600,7 +611,14 @@ class result_comparison:
 
     def write_scenario(self, scene, metric, value, baseline=None):
 
-        self.fo.write(scene.replace(" ", "_") + '_' + metric.replace(" ", "_"))
+        if scene == 'rt_app':
+            scene = 'camera'
+
+        #self.fo.write(scene.replace(" ", "_") + '_' + metric.replace(" ", "_"))
+        if metric == 'Power':
+            self.fo.write(scene)
+        else:
+            self.fo.write(scene.replace(" ", "_") + '_' + metric.replace(" ", "_"))
 
         if not baseline is None:
             for m, values in sorted(value[baseline].items()):
@@ -621,7 +639,10 @@ class result_comparison:
 
     def write_active_power_scenario(self, scene, metric, value):
 
-        self.fo.write(scene.replace(" ", "_") + '_' + metric.replace(" ", "_"))
+        if scene == 'rt_app':
+            scene = 'camera'
+
+        self.fo.write(scene)
 
         idle_power_value = self.parse_scenario('idle', self.power_scenarios)
 
