@@ -1,0 +1,7 @@
+path count
+secb_sync 0
+secb_idle_bt 0
+secb_insuff_cap 0
+secb_no_nrg_sav 70
+secb_nrg_sav 556897
+secb_count 0

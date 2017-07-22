@@ -1,0 +1,6 @@
+path count
+sis_idle 2284
+sis_cache_affine 619
+sis_suff_cap 0
+sis_idle_cpu 643
+sis_count 850

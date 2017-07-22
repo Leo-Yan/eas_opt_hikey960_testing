@@ -1,0 +1,1 @@
+test kernel_fbt kernel_fbt_eawc kernel_fbt_eawc_cls kernel_fbt_eawc_cls_ts kernel_fbt_eawc_cls_ts_opp
