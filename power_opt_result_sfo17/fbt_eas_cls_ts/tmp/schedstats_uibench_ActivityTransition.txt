@@ -1,0 +1,5 @@
+section secb_attempts sis_attempts cas_attempts sis_idle sis_cache_affine sis_suff_cap sis_idle_cpu sis_count secb_sync secb_idle_bt secb_insuff_cap secb_no_nrg_sav secb_nrg_sav secb_count fbt_no_cpu fbt_no_sd fbt_pref_idle fbt_count tasks_on_big_CPU tasks_on_LITTLE_CPU
+kernel_fbt  16031 5242 1620 2956 1139 0 804 1147 0 0 1 10981 284 4764 0 0 0 16031 15787 7256
+kernel_fbt_eawc  16693 3753 1530 2284 619 0 643 850 0 0 5 11828 338 4521 0 0 0 0 9962 12148
+kernel_fbt_eawc_cls  16695 3665 2045 2137 557 0 766 970 0 0 0 108 16554 32 0 0 0 0 5227 17315
+kernel_fbt_eawc_cls_ts  15961 3290 1233 2038 553 0 559 698 0 0 0 191 15757 12 0 0 0 0 3487 17119

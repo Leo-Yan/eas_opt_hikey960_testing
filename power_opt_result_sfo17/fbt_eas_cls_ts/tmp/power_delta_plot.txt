@@ -1,0 +1,5 @@
+test kernel_fbt kernel_fbt_eawc kernel_fbt_eawc_cls kernel_fbt_eawc_cls_ts
+idle 0.0 -18.784 -22.04 -40.705
+video 0.0 -25.759 138.797333333 68.3253333333
+audio 0.0 10.504 -11.7606666667 -19.1346666667
+camera 0.0 -180.959666667 230.412333333 44.354

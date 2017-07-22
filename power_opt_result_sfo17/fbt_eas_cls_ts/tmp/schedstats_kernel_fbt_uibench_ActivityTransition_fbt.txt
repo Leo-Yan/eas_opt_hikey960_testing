@@ -1,0 +1,5 @@
+path count
+fbt_no_cpu 0
+fbt_no_sd 0
+fbt_pref_idle 0
+fbt_count 16031

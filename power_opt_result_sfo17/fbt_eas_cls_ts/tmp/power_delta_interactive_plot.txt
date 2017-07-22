@@ -1,0 +1,9 @@
+test kernel_fbt kernel_fbt_eawc kernel_fbt_eawc_cls kernel_fbt_eawc_cls_ts
+uibench_InvalidateActivity 0.0 38.5006666667 207.619 230.027
+galleryfling 0.0 31.361 3.93866666667 18.3933333333
+recentfling 0.0 -98.0563333333 -131.556333333 -141.209333333
+emailfling 0.0 -76.6423333333 -12.5266666667 -44.3306666667
+uibench_ActivityTransitionDetails 0.0 -128.820333333 -181.602 -434.781
+uibench_TrivialAnimationActivity 0.0 -18.876 -230.108666667 12.094
+uibench_ActivityTransition 0.0 -128.820333333 -181.602 -434.781
+uibench_InflatingListActivity 0.0 -82.5553333333 -56.763 -108.078
